@@ -3,6 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync, existsSync} from 'node:fs';
+import {Script} from 'node:vm';
 import {fileURLToPath} from 'node:url';
 import {dirname, resolve} from 'node:path';
 
@@ -180,6 +181,26 @@ test('las 27 fotografías referenciadas existen en images/',()=>{
   const images=new Set([...html.matchAll(/\b(?:src)="(images\/[^"]+\.(?:webp|jpe?g|png))"/g)].map(m=>m[1]));
   assert.equal(images.size,27);
   for(const path of images)assert.ok(existsSync(resolve(root,path)),'Falta imagen: '+path);
+});
+
+test('los precios y colores usados por el carrito coinciden con la ficha visible',()=>{
+  const raw=html.match(/const products=(\\[[\\s\\S]*?\\]);\\s*const phone=/)?.[1];
+  assert.ok(raw,'No se encontraron los datos del carrito');
+  const inCart=JSON.parse(raw);
+  assert.equal(inCart.length,products.length);
+  for(const p of products){
+    const item=inCart.find(i=>i.id===p.id);
+    assert.ok(item,'Falta producto del carrito: '+p.id);
+    assert.equal(item.price,p.price,'Precio incorrecto en el carrito: '+p.id);
+    assert.deepEqual(item.colors,p.colors.filter(x=>x!=='Sin preferencia'),'Colores incorrectos en el carrito: '+p.id);
+  }
+});
+
+test('el JavaScript integrado tiene sintaxis válida',()=>{
+  for(const match of html.matchAll(/<script([^>]*)>([\\s\\S]*?)<\\/script>/g)){
+    if(/application\\/ld\\+json/.test(match[1]))continue;
+    new Script(match[2],{filename:'index.html (script integrado)'});
+  }
 });
 
 test('se guarda la fotografía elegida y se incorpora a la consulta',()=>{

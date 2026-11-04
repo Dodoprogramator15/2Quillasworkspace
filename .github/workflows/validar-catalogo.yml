@@ -1,0 +1,25 @@
+name: Validar catálogo original de 2 Quillas
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  catalogo:
+    name: Productos, fotos y variantes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Comprobar catálogo aprobado
+        run: node --test tests/catalogo.test.mjs

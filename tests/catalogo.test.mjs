@@ -184,7 +184,7 @@ test('las 27 fotografías referenciadas existen en images/',()=>{
 });
 
 test('los precios y colores usados por el carrito coinciden con la ficha visible',()=>{
-  const raw=html.match(/const products=(\\[[\\s\\S]*?\\]);\\s*const phone=/)?.[1];
+  const raw=html.match(/const products=(\[[\s\S]*?\]);\s*const phone=/)?.[1];
   assert.ok(raw,'No se encontraron los datos del carrito');
   const inCart=JSON.parse(raw);
   assert.equal(inCart.length,products.length);
@@ -197,8 +197,8 @@ test('los precios y colores usados por el carrito coinciden con la ficha visible
 });
 
 test('el JavaScript integrado tiene sintaxis válida',()=>{
-  for(const match of html.matchAll(/<script([^>]*)>([\\s\\S]*?)<\\/script>/g)){
-    if(/application\\/ld\\+json/.test(match[1]))continue;
+  for(const match of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)){
+    if(/application\/ld\+json/.test(match[1]))continue;
     new Script(match[2],{filename:'index.html (script integrado)'});
   }
 });
